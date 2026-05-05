@@ -1,0 +1,8 @@
+docgit.py
+setup.py
+docgit.egg-info/PKG-INFO
+docgit.egg-info/SOURCES.txt
+docgit.egg-info/dependency_links.txt
+docgit.egg-info/entry_points.txt
+docgit.egg-info/requires.txt
+docgit.egg-info/top_level.txt

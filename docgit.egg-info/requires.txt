@@ -1,0 +1,4 @@
+click
+rich
+python-docx
+pywin32

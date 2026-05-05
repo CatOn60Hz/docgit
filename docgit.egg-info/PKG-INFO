@@ -1,0 +1,8 @@
+Metadata-Version: 2.2
+Name: docgit
+Version: 0.1.0
+Requires-Dist: click
+Requires-Dist: rich
+Requires-Dist: python-docx
+Requires-Dist: pywin32
+Dynamic: requires-dist

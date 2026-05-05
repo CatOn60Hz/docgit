@@ -7,14 +7,14 @@
   <meta name="description" content="Docgit is a Git-inspired version control system for Microsoft Word .docx files.">
   <style>
     :root {
-      --bg: #f5f1e8;
-      --paper: rgba(255, 252, 245, 0.92);
-      --ink: #1f1d1a;
-      --muted: #5d564c;
-      --line: rgba(31, 29, 26, 0.12);
-      --accent: #b14d2e;
-      --accent-dark: #82361f;
-      --shadow: 0 18px 60px rgba(71, 46, 24, 0.12);
+      --bg: #090909;
+      --paper: rgba(17, 17, 17, 0.92);
+      --ink: #f5f5f5;
+      --muted: #bebebe;
+      --line: rgba(255, 255, 255, 0.1);
+      --accent: #d11f1f;
+      --accent-dark: #8b0000;
+      --shadow: 0 18px 60px rgba(0, 0, 0, 0.45);
     }
 
     * {
@@ -26,9 +26,9 @@
       font-family: Georgia, "Times New Roman", serif;
       color: var(--ink);
       background:
-        radial-gradient(circle at top left, rgba(177, 77, 46, 0.18), transparent 30%),
-        radial-gradient(circle at 85% 15%, rgba(126, 91, 53, 0.14), transparent 25%),
-        linear-gradient(180deg, #f8f4ec 0%, #efe7d9 100%);
+        radial-gradient(circle at top left, rgba(209, 31, 31, 0.22), transparent 30%),
+        radial-gradient(circle at 85% 15%, rgba(139, 0, 0, 0.18), transparent 25%),
+        linear-gradient(180deg, #111111 0%, #050505 100%);
       min-height: 100vh;
     }
 
@@ -63,16 +63,16 @@
       width: 180px;
       height: 180px;
       border-radius: 50%;
-      background: rgba(177, 77, 46, 0.09);
+      background: rgba(209, 31, 31, 0.12);
     }
 
     .badge {
       display: inline-block;
       padding: 0.45rem 0.8rem;
       border-radius: 999px;
-      border: 1px solid rgba(177, 77, 46, 0.22);
+      border: 1px solid rgba(209, 31, 31, 0.32);
       color: var(--accent-dark);
-      background: rgba(177, 77, 46, 0.08);
+      background: rgba(209, 31, 31, 0.12);
       font-size: 0.9rem;
       letter-spacing: 0.02em;
     }
@@ -130,7 +130,7 @@
     .button-secondary {
       color: var(--ink);
       border: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.55);
+      background: rgba(255, 255, 255, 0.04);
     }
 
     .button:hover,
@@ -176,10 +176,11 @@
       margin: 0;
       padding: 1rem;
       border-radius: 16px;
-      background: #221d18;
-      color: #f7f0e7;
+      background: #000000;
+      color: #f7f7f7;
       overflow-x: auto;
       font-size: 0.95rem;
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     code {
@@ -207,15 +208,20 @@
       display: grid;
       place-items: center;
       border-radius: 50%;
-      background: rgba(177, 77, 46, 0.12);
+      background: rgba(209, 31, 31, 0.16);
       color: var(--accent-dark);
       font-weight: 700;
     }
 
-    .footer {
-      padding: 0 0 3rem;
-      text-align: center;
-      color: var(--muted);
+    .span-12 {
+      grid-column: 1 / -1;
+    }
+
+    .download-card {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      align-items: flex-start;
     }
 
     .reveal {
@@ -266,6 +272,7 @@
         <div class="actions">
           <a class="button" href="#quickstart">Get Started</a>
           <a class="button-secondary" href="#how-it-works">How it works</a>
+          <a class="button-secondary" href="dist/docgit.exe">Download EXE</a>
         </div>
       </div>
     </section>
@@ -345,7 +352,15 @@ docgit log</code></pre>
       </article>
     </section>
 
-    <p class="footer reveal delay-3">Publish this file through GitHub Pages by serving the repository root.</p>
+    <section class="grid">
+      <article class="panel span-12 reveal delay-3 download-card">
+        <h2>Download</h2>
+        <p>
+          Download the Windows executable build if you want to run Docgit without installing Python first.
+        </p>
+        <a class="button" href="dist/docgit.exe">Download docgit.exe</a>
+      </article>
+    </section>
   </main>
 </body>
 </html>

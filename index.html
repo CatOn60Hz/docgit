@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Docgit</title>
+  <meta name="description" content="Docgit is a Git-inspired version control system for Microsoft Word .docx files.">
+  <style>
+    :root {
+      --bg: #f5f1e8;
+      --paper: rgba(255, 252, 245, 0.92);
+      --ink: #1f1d1a;
+      --muted: #5d564c;
+      --line: rgba(31, 29, 26, 0.12);
+      --accent: #b14d2e;
+      --accent-dark: #82361f;
+      --shadow: 0 18px 60px rgba(71, 46, 24, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(177, 77, 46, 0.18), transparent 30%),
+        radial-gradient(circle at 85% 15%, rgba(126, 91, 53, 0.14), transparent 25%),
+        linear-gradient(180deg, #f8f4ec 0%, #efe7d9 100%);
+      min-height: 100vh;
+    }
+
+    .wrap {
+      width: min(1100px, calc(100% - 2rem));
+      margin: 0 auto;
+    }
+
+    .hero {
+      padding: 4.5rem 0 3rem;
+    }
+
+    .hero-card,
+    .panel {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+
+    .hero-card {
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-card::after {
+      content: "";
+      position: absolute;
+      inset: auto -40px -40px auto;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: rgba(177, 77, 46, 0.09);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.45rem 0.8rem;
+      border-radius: 999px;
+      border: 1px solid rgba(177, 77, 46, 0.22);
+      color: var(--accent-dark);
+      background: rgba(177, 77, 46, 0.08);
+      font-size: 0.9rem;
+      letter-spacing: 0.02em;
+    }
+
+    h1, h2 {
+      margin: 0;
+      line-height: 1.05;
+      font-weight: 700;
+    }
+
+    h1 {
+      font-size: clamp(2.7rem, 6vw, 5rem);
+      margin-top: 1rem;
+      max-width: 9ch;
+    }
+
+    h2 {
+      font-size: clamp(1.5rem, 3vw, 2.2rem);
+      margin-bottom: 1rem;
+    }
+
+    p {
+      line-height: 1.7;
+      color: var(--muted);
+      font-size: 1.02rem;
+    }
+
+    .lede {
+      max-width: 62ch;
+      font-size: 1.1rem;
+      margin: 1rem 0 1.5rem;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.9rem;
+      margin-top: 1.5rem;
+    }
+
+    .button,
+    .button-secondary {
+      text-decoration: none;
+      border-radius: 999px;
+      padding: 0.9rem 1.2rem;
+      font-weight: 700;
+      transition: transform 180ms ease, background 180ms ease, color 180ms ease;
+    }
+
+    .button {
+      background: var(--accent);
+      color: #fffaf5;
+    }
+
+    .button-secondary {
+      color: var(--ink);
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.55);
+    }
+
+    .button:hover,
+    .button-secondary:hover {
+      transform: translateY(-2px);
+    }
+
+    .grid {
+      display: grid;
+      gap: 1.25rem;
+      grid-template-columns: repeat(12, 1fr);
+      margin: 1.5rem 0 3rem;
+    }
+
+    .panel {
+      padding: 1.5rem;
+    }
+
+    .span-7 {
+      grid-column: span 7;
+    }
+
+    .span-5 {
+      grid-column: span 5;
+    }
+
+    .span-4 {
+      grid-column: span 4;
+    }
+
+    .span-8 {
+      grid-column: span 8;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 1.15rem;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    pre {
+      margin: 0;
+      padding: 1rem;
+      border-radius: 16px;
+      background: #221d18;
+      color: #f7f0e7;
+      overflow-x: auto;
+      font-size: 0.95rem;
+    }
+
+    code {
+      font-family: Consolas, "Courier New", monospace;
+    }
+
+    .steps {
+      counter-reset: item;
+      display: grid;
+      gap: 1rem;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 40px 1fr;
+      gap: 1rem;
+      align-items: start;
+    }
+
+    .step::before {
+      counter-increment: item;
+      content: counter(item);
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: rgba(177, 77, 46, 0.12);
+      color: var(--accent-dark);
+      font-weight: 700;
+    }
+
+    .footer {
+      padding: 0 0 3rem;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(18px);
+      animation: rise 700ms ease forwards;
+    }
+
+    .delay-1 { animation-delay: 120ms; }
+    .delay-2 { animation-delay: 240ms; }
+    .delay-3 { animation-delay: 360ms; }
+
+    @keyframes rise {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 860px) {
+      .span-7,
+      .span-5,
+      .span-4,
+      .span-8 {
+        grid-column: 1 / -1;
+      }
+
+      .hero {
+        padding-top: 2rem;
+      }
+
+      .hero-card,
+      .panel {
+        border-radius: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <div class="hero-card reveal">
+        <span class="badge">Version control for Word documents</span>
+        <h1>Docgit</h1>
+        <p class="lede">
+          A Git-inspired workflow for Microsoft Word `.docx` files, with local snapshots, branching, diffs, rollback, and Word-aware file restoration.
+        </p>
+        <div class="actions">
+          <a class="button" href="#quickstart">Get Started</a>
+          <a class="button-secondary" href="#how-it-works">How it works</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="panel span-7 reveal delay-1">
+        <h2>Why It Exists</h2>
+        <p>
+          Standard Git works well for source code, but `.docx` files are zipped binary documents. Docgit stores document snapshots by hash and adds document-specific operations so versioning Word files feels practical instead of fragile.
+        </p>
+      </article>
+      <article class="panel span-5 reveal delay-2">
+        <h2>Core Features</h2>
+        <ul>
+          <li>Commit and restore `.docx` snapshots</li>
+          <li>Branch-based document workflows</li>
+          <li>Status and commit history from the CLI</li>
+          <li>Paragraph-aware diffs with page and line hints</li>
+          <li>Safe merge behavior for diverged Word files</li>
+        </ul>
+      </article>
+    </section>
+
+    <section class="grid" id="quickstart">
+      <article class="panel span-4 reveal delay-1">
+        <h2>Quick Start</h2>
+        <div class="steps">
+          <div class="step">
+            <div>
+              <p>Initialize a repository in your working folder.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div>
+              <p>Commit your `.docx` file with a message.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div>
+              <p>Use branches, diffs, and rollback as the document evolves.</p>
+            </div>
+          </div>
+        </div>
+      </article>
+      <article class="panel span-8 reveal delay-2">
+        <h2>CLI Example</h2>
+        <pre><code>docgit init
+docgit commit MyDocument.docx -m "Initial draft"
+docgit status
+docgit branch edits
+docgit switch edits
+docgit diff MyDocument.docx
+docgit log</code></pre>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="panel span-8 reveal delay-2" id="how-it-works">
+        <h2>How It Works</h2>
+        <p>
+          Docgit creates a local `.docgit/` directory with an object store and an `index.json` file. Each commit maps tracked document paths to immutable file hashes, while branches act as lightweight pointers to commit IDs.
+        </p>
+        <p>
+          For diffs, Docgit extracts text from `.docx` files, annotates it with page and line context, and compares those lines rather than raw document bytes. For checkout and rollback, it can also try to close and reopen Word documents automatically through `pywin32`.
+        </p>
+      </article>
+      <article class="panel span-4 reveal delay-3">
+        <h2>Built With</h2>
+        <ul>
+          <li>Python</li>
+          <li>Click</li>
+          <li>Rich</li>
+          <li>python-docx</li>
+          <li>pywin32</li>
+          <li>VBA integration</li>
+        </ul>
+      </article>
+    </section>
+
+    <p class="footer reveal delay-3">Publish this file through GitHub Pages by serving the repository root.</p>
+  </main>
+</body>
+</html>

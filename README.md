@@ -13,13 +13,6 @@ The repository also includes a simple GitHub Pages site in [index.html](/abs/pat
 - Switches branches and restores committed versions
 - Attempts seamless Word document hot-swapping through `pywin32`
 
-## Project Files
-
-- [docgit.py](/abs/path/C:/Users/Arfan/docgitt/docgit.py): main CLI implementation
-- [docgit_macro.vba](/abs/path/C:/Users/Arfan/docgitt/docgit_macro.vba): Word/VBA integration
-- [ARCHITECTURE.md](/abs/path/C:/Users/Arfan/docgitt/ARCHITECTURE.md): internal design notes
-- [index.html](/abs/path/C:/Users/Arfan/docgitt/index.html): GitHub Pages landing page
-
 ## Installation
 
 ```bash
@@ -58,18 +51,6 @@ docgit switch edits
 - `docgit rollback [commit]`
 - `docgit merge <branch>`
 - `docgit show <file>`
-
-## GitHub Pages
-
-To publish the included website:
-
-1. Push this repository to GitHub.
-2. Open `Settings > Pages`.
-3. Set the source to `Deploy from a branch`.
-4. Select the branch you want to publish from and choose the `/ (root)` folder.
-5. Save the settings.
-
-GitHub Pages will then serve the site from `index.html`.
 
 ## Notes
 

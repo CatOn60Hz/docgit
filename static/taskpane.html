@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <title>DocGit</title>
+    <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+    <link rel="stylesheet" href="taskpane.css" />
+</head>
+<body>
+<div id="container">
+
+    <!-- ── Header ── -->
+    <div id="header">
+        <h1>DocGit</h1>
+        <p id="docPath">Detecting document path...</p>
+        <div id="pathWarning" style="display:none;">
+            <p class="warn">⚠ Could not auto-detect path. Enter it manually:</p>
+            <div class="row">
+                <input type="text" id="manualPath" placeholder="e.g. C:\Users\Arfan\Doc.docx" />
+                <button id="btnSetPath" class="action-btn small">Set</button>
+            </div>
+        </div>
+        <div id="branchBadge" style="display:none;">
+            Branch: <span id="currentBranch" class="badge">main</span>
+        </div>
+    </div>
+
+    <!-- ── Init ── -->
+    <div class="section-label">Repository</div>
+    <button id="btnInit" class="action-btn primary">Initialize Repository</button>
+
+    <!-- ── Commit ── -->
+    <div class="section-label">Commit</div>
+    <div class="row">
+        <input type="text" id="commitMsg" placeholder="Commit message..." />
+        <button id="btnCommit" class="action-btn small primary-outline">Save &amp; Commit</button>
+    </div>
+
+    <!-- ── Info ── -->
+    <div class="section-label">Info</div>
+    <div class="button-grid">
+        <button id="btnStatus" class="action-btn">Status</button>
+        <button id="btnLog"    class="action-btn">Log</button>
+        <button id="btnGraph"  class="action-btn">Graph</button>
+    </div>
+
+    <!-- ── Diff ── -->
+    <div class="section-label">Diff</div>
+    <div class="diff-mode-row">
+        <label><input type="radio" name="diffMode" value="current" checked /> Working vs Last Commit</label>
+        <label><input type="radio" name="diffMode" value="branches" /> Branch A vs B</label>
+        <label><input type="radio" name="diffMode" value="commits"  /> Commit A vs B</label>
+    </div>
+
+    <div id="diffBranchPanel" style="display:none;">
+        <div class="row">
+            <select id="diffBranchA" class="branch-select"><option value="">Branch A...</option></select>
+            <span class="vs-label">vs</span>
+            <select id="diffBranchB" class="branch-select"><option value="">Branch B...</option></select>
+        </div>
+    </div>
+
+    <div id="diffCommitPanel" style="display:none;">
+        <div class="row">
+            <select id="diffCommitA" class="branch-select"><option value="">Commit A...</option></select>
+            <span class="vs-label">vs</span>
+            <select id="diffCommitB" class="branch-select"><option value="">Commit B...</option></select>
+        </div>
+    </div>
+
+    <button id="btnDiff" class="action-btn">Open Diff</button>
+
+    <!-- ── Branches ── -->
+    <div class="section-label">Branches</div>
+    <div class="row">
+        <input type="text" id="branchName" placeholder="New branch name..." />
+        <button id="btnBranch" class="action-btn small">Create</button>
+    </div>
+    <div class="row">
+        <select id="switchSelect" class="branch-select"><option value="">Switch to branch...</option></select>
+        <button id="btnSwitch" class="action-btn small">Switch</button>
+    </div>
+    <div class="row">
+        <select id="mergeSelect" class="branch-select"><option value="">Merge into current...</option></select>
+        <button id="btnMerge" class="action-btn small">Merge</button>
+    </div>
+
+    <!-- ── Rollback ── -->
+    <div class="section-label">Rollback</div>
+    <div class="row">
+        <select id="rollbackSelect" class="branch-select"><option value="">Select commit to restore...</option></select>
+        <button id="btnRollback" class="action-btn small danger">Rollback</button>
+    </div>
+
+    <button id="btnRefresh" class="action-btn secondary">Refresh All</button>
+
+    <!-- ── Output ── -->
+    <div id="output-container">
+        <pre id="output">Ready.</pre>
+    </div>
+
+</div>
+<script src="taskpane.js"></script>
+</body>
+</html>

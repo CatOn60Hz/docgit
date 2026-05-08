@@ -1,0 +1,30 @@
+# Build outputs
+build/
+dist/
+Output/
+*.spec
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+venv/
+.venv/
+*.egg-info/
+
+# SSL certificates (generated per-machine by mkcert, not committed)
+localhost+1.pem
+localhost+1-key.pem
+
+# mkcert binary (large, download separately)
+mkcert.exe
+
+# Local docgit repository data (working directory state)
+.docgit/
+
+# Word temp files
+~$*.docx
+
+# OS
+.DS_Store
+Thumbs.db

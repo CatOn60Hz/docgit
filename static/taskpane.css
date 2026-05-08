@@ -1,0 +1,179 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f3f2f1;
+    color: #323130;
+    font-size: 14px;
+}
+
+#container {
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    box-sizing: border-box;
+    gap: 4px;
+}
+
+/* ── Header ── */
+#header { margin-bottom: 6px; }
+
+h1 {
+    font-size: 22px;
+    margin: 0 0 2px 0;
+    color: #0078d4;
+    font-weight: 700;
+}
+
+#docPath {
+    font-size: 11px;
+    color: #605e5c;
+    word-break: break-all;
+    margin: 0 0 4px;
+}
+
+#branchBadge {
+    font-size: 12px;
+    color: #605e5c;
+    margin-bottom: 4px;
+}
+
+.badge {
+    display: inline-block;
+    background: #0078d4;
+    color: white;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+/* ── Section labels ── */
+.section-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #605e5c;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin: 10px 0 4px;
+    border-bottom: 1px solid #edebe9;
+    padding-bottom: 2px;
+}
+
+/* ── Buttons ── */
+.action-btn {
+    background: #ffffff;
+    border: 1px solid #8a8886;
+    border-radius: 4px;
+    padding: 7px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    width: 100%;
+    margin-bottom: 6px;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+.action-btn:hover { background: #f3f2f1; border-color: #323130; }
+
+.action-btn.primary { background: #0078d4; color: white; border: none; }
+.action-btn.primary:hover { background: #106ebe; }
+
+.action-btn.primary-outline { background: white; color: #0078d4; border-color: #0078d4; }
+.action-btn.primary-outline:hover { background: #deecf9; }
+
+.action-btn.secondary {
+    background: #f3f2f1;
+    border-color: #8a8886;
+    color: #323130;
+    font-size: 12px;
+    padding: 6px 12px;
+}
+
+.action-btn.danger { color: #a4262c; border-color: #a4262c; }
+.action-btn.danger:hover { background: #fde7e9; }
+
+.action-btn.small {
+    width: auto;
+    padding: 7px 12px;
+    margin-bottom: 0;
+    white-space: nowrap;
+}
+
+/* ── Grid / Row ── */
+.button-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+.button-grid .action-btn { margin-bottom: 0; }
+
+.row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 6px;
+    align-items: center;
+}
+.row input, .row select {
+    flex-grow: 1;
+    padding: 7px 8px;
+    border: 1px solid #8a8886;
+    border-radius: 4px;
+    font-size: 13px;
+    box-sizing: border-box;
+    font-family: inherit;
+    background: white;
+}
+.row .action-btn { width: auto; margin-bottom: 0; }
+
+/* ── Diff mode radios ── */
+.diff-mode-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 6px;
+    font-size: 12px;
+    color: #323130;
+}
+.diff-mode-row label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+
+.vs-label { font-size: 11px; color: #605e5c; white-space: nowrap; }
+
+.branch-select {
+    flex-grow: 1;
+    padding: 7px 8px;
+    border: 1px solid #8a8886;
+    border-radius: 4px;
+    font-size: 13px;
+    background: white;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+/* ── Warnings ── */
+.warn {
+    font-size: 11px;
+    color: #c50f1f;
+    margin: 2px 0 4px;
+}
+
+/* ── Output terminal ── */
+#output-container {
+    background: #1e1e1e;
+    color: #d4d4d4;
+    border-radius: 4px;
+    padding: 10px 12px;
+    margin-top: 10px;
+    flex-grow: 1;
+    min-height: 120px;
+    overflow-y: auto;
+}
+#output {
+    font-family: 'Consolas', monospace;
+    font-size: 12px;
+    margin: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}

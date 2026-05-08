@@ -1,6 +1,6 @@
 [Setup]
 AppName=DocGit
-AppVersion=1.1
+AppVersion=1.2
 AppPublisher=Arfan
 DefaultDirName={pf}\DocGit
 DefaultGroupName=DocGit
@@ -12,10 +12,21 @@ ArchitecturesInstallIn64BitMode=x64
 ChangesEnvironment=yes
 PrivilegesRequired=admin
 
+[Dirs]
+; Ensure the static sub-folder exists before files are copied into it
+Name: "{app}\static"
+Name: "{app}\static\assets"
+
 [Files]
 ; Core executables
 Source: "dist\docgit.exe";         DestDir: "{app}"; Flags: ignoreversion
 Source: "dist\docgit_server.exe";  DestDir: "{app}"; Flags: ignoreversion
+; UI files — served live from disk, never baked into the exe
+; Flags: ignoreversion so updates always overwrite the old copy
+Source: "static\taskpane.html";    DestDir: "{app}\static"; Flags: ignoreversion
+Source: "static\taskpane.css";     DestDir: "{app}\static"; Flags: ignoreversion
+Source: "static\taskpane.js";      DestDir: "{app}\static"; Flags: ignoreversion
+Source: "static\assets\*";         DestDir: "{app}\static\assets"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; Add-in manifest
 Source: "manifest.xml";            DestDir: "{app}"; Flags: ignoreversion
 ; mkcert binary for SSL cert generation on user machine

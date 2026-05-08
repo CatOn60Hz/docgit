@@ -15,13 +15,15 @@ CORS(app)
 
 # ── Paths ────────────────────────────────────────────────────────────────────
 if getattr(sys, 'frozen', False):
+    # Running as a compiled .exe — BASE_DIR is the folder containing the exe
     BASE_DIR = os.path.dirname(sys.executable)
-    MEIPASS_DIR = sys._MEIPASS
 else:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    MEIPASS_DIR = BASE_DIR
 
-STATIC_DIR   = os.path.join(MEIPASS_DIR, 'static')
+# ALWAYS load static files from the folder next to the exe/script on disk.
+# This means you can edit taskpane.html/css/js and they take effect immediately
+# without needing to recompile the server.
+STATIC_DIR   = os.path.join(BASE_DIR, 'static')
 DOCGIT_EXE   = os.path.join(BASE_DIR, 'docgit.exe')
 if not os.path.exists(DOCGIT_EXE):
     DOCGIT_EXE = None   # dev mode — use docgit.py

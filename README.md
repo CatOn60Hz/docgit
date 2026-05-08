@@ -2,7 +2,7 @@
 
 > Git-like version control for Microsoft Word documents — built as a local Office Web Add-in.
 
-![DocGit Preview](docs/screenshots/preview.png)
+![DocGit Preview](docs/screenshots/Screenshot.png)
 
 DocGit brings commit, branch, diff, rollback, and merge workflows to `.docx` files. It runs entirely on your local machine — no cloud, no SharePoint, no OneDrive. A task pane sidebar inside Microsoft Word gives you full version control without leaving the application.
 

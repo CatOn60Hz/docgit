@@ -2,6 +2,7 @@
 build/
 dist/
 Output/
+RELEASE_NOTES.md
 *.spec
 
 # Python

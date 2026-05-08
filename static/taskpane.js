@@ -11,13 +11,19 @@ Office.onReady((info) => {
 // ── Button bindings ──────────────────────────────────────────────────────────
 function bindButtons() {
     document.getElementById("btnInit").onclick = async () => {
-        await runCommand("init");
-        refreshAll();
+        if (!documentPath) { showOutput("Document path not set."); return; }
+        showOutput("Initializing repository...");
+        try {
+            const r = await apiFetch("/api/init", { filepath: documentPath });
+            showOutput(r.output || r.error || "Done.");
+            refreshAll();
+        } catch(e) { showOutput("Init failed: " + e); }
     };
 
     document.getElementById("btnCommit").onclick = async () => {
         const msg = document.getElementById("commitMsg").value.trim();
         if (!msg) { showOutput("Please enter a commit message."); return; }
+        if (!documentPath) { showOutput("Document path not set."); return; }
 
         showOutput("Saving document...");
         const saved = await saveDocument();
@@ -26,13 +32,31 @@ function bindButtons() {
             await new Promise(r => setTimeout(r, 800));
         }
 
-        await runCommand(`commit -m ${JSON.stringify(msg)}`);
-        document.getElementById("commitMsg").value = "";
-        refreshAll();
+        showOutput("Committing...");
+        try {
+            const r = await apiFetch("/api/commit", { filepath: documentPath, message: msg });
+            showOutput(r.output || r.error || "Done.");
+            document.getElementById("commitMsg").value = "";
+            refreshAll();
+        } catch(e) { showOutput("Commit failed: " + e); }
     };
 
-    document.getElementById("btnStatus").onclick = () => runCommand("status");
-    document.getElementById("btnLog").onclick    = () => runCommand("log");
+    document.getElementById("btnStatus").onclick = async () => {
+        if (!documentPath) { showOutput("Document path not set."); return; }
+        showOutput("Checking status...");
+        try {
+            const r = await apiFetch("/api/status", { filepath: documentPath });
+            showOutput(r.error ? "Error: " + r.error : (r.output || "(no output)"));
+        } catch(e) { showOutput("Failed: " + e); }
+    };
+    document.getElementById("btnLog").onclick = async () => {
+        if (!documentPath) { showOutput("Document path not set."); return; }
+        showOutput("Loading log...");
+        try {
+            const r = await apiFetch("/api/log", { filepath: documentPath });
+            showOutput(r.error ? "Error: " + r.error : (r.output || "(no output)"));
+        } catch(e) { showOutput("Failed: " + e); }
+    };
     document.getElementById("btnGraph").onclick  = () => runCommand("graph");
 
     document.getElementById("btnDiff").onclick = async () => {
@@ -62,9 +86,14 @@ function bindButtons() {
     document.getElementById("btnBranch").onclick = async () => {
         const name = document.getElementById("branchName").value.trim();
         if (!name) { showOutput("Enter a branch name."); return; }
-        await runCommand(`branch ${JSON.stringify(name)}`);
-        document.getElementById("branchName").value = "";
-        refreshAll();
+        if (!documentPath) { showOutput("Document path not set."); return; }
+        showOutput("Creating branch...");
+        try {
+            const r = await apiFetch("/api/branch-create", { filepath: documentPath, branch_name: name });
+            showOutput(r.output || r.error || "Done.");
+            document.getElementById("branchName").value = "";
+            refreshAll();
+        } catch(e) { showOutput("Branch create failed: " + e); }
     };
 
     document.getElementById("btnSwitch").onclick = async () => {

@@ -33,6 +33,11 @@ ANSI_ESCAPE  = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
 # In-memory diff session store  {session_id: html_string}
 DIFF_SESSIONS: dict = {}
 
+# ── Index cache ──────────────────────────────────────────────────────────────
+# Avoid hitting disk on every API call. Cache is invalidated whenever
+# index.json's modification time changes (i.e. after any commit/branch/merge).
+_index_cache: dict = {}   # doc_dir -> {'mtime': float, 'data': dict}
+
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 def get_cmd_base():
@@ -51,11 +56,18 @@ def normalize_path(filepath):
 
 
 def load_index(doc_dir):
+    """Load index.json with mtime-based in-memory cache."""
     index_path = os.path.join(doc_dir, '.docgit', 'index.json')
     if not os.path.exists(index_path):
         return None
+    mtime = os.path.getmtime(index_path)
+    cached = _index_cache.get(doc_dir)
+    if cached and cached['mtime'] == mtime:
+        return cached['data']
     with open(index_path, 'r', encoding='utf-8') as f:
-        return json.load(f)
+        data = json.load(f)
+    _index_cache[doc_dir] = {'mtime': mtime, 'data': data}
+    return data
 
 
 def extract_paragraphs(docx_path):
@@ -244,6 +256,132 @@ def diff_view(session_id):
     return html
 
 
+# ── Inline fast routes — zero subprocess overhead ────────────────────────────
+def _save_index(doc_dir, index):
+    """Write index.json and invalidate the in-memory cache."""
+    index_path = os.path.join(doc_dir, '.docgit', 'index.json')
+    with open(index_path, 'w', encoding='utf-8') as f:
+        json.dump(index, f, indent=2)
+    _index_cache.pop(doc_dir, None)   # force cache refresh on next read
+
+
+def _hash_file(filepath):
+    import hashlib
+    h = hashlib.sha256()
+    try:
+        with open(filepath, 'rb') as f:
+            h.update(f.read())
+        return h.hexdigest()
+    except Exception:
+        return ""
+
+
+@app.route('/api/init', methods=['POST'])
+def api_init():
+    """Initialise a docgit repo inline."""
+    try:
+        data    = request.get_json(force=True)
+        filepath = normalize_path(data.get('filepath', ''))
+        if not filepath:
+            return jsonify({'error': 'No filepath provided.'})
+        doc_dir = os.path.dirname(filepath)
+        docgit_dir  = os.path.join(doc_dir, '.docgit')
+        objects_dir = os.path.join(docgit_dir, 'objects')
+        index_path  = os.path.join(docgit_dir, 'index.json')
+        if os.path.exists(index_path):
+            return jsonify({'output': f'Already a docgit repository in {doc_dir}'})
+        os.makedirs(objects_dir, exist_ok=True)
+        blank = {'HEAD': 'main', 'branches': {'main': None}, 'commits': {}}
+        with open(index_path, 'w', encoding='utf-8') as f:
+            json.dump(blank, f, indent=2)
+        _index_cache.pop(doc_dir, None)
+        return jsonify({'output': f'Initialized empty docgit repository in {doc_dir}'})
+    except Exception as e:
+        return jsonify({'error': f'Init failed: {e}'})
+
+
+@app.route('/api/commit', methods=['POST'])
+def api_commit():
+    """Commit the active document inline."""
+    import hashlib, datetime, shutil
+    try:
+        data     = request.get_json(force=True)
+        filepath = normalize_path(data.get('filepath', ''))
+        message  = data.get('message', '').strip()
+        if not filepath or not message:
+            return jsonify({'error': 'filepath and message are required.'})
+        if not os.path.exists(filepath):
+            return jsonify({'error': f'File not found: {filepath}'})
+
+        doc_dir = os.path.dirname(filepath)
+        index   = load_index(doc_dir)
+        if not index:
+            return jsonify({'error': 'Not a docgit repository. Run init first.'})
+
+        filename    = os.path.basename(filepath)
+        objects_dir = os.path.join(doc_dir, '.docgit', 'objects')
+        os.makedirs(objects_dir, exist_ok=True)
+
+        # Hash the file
+        file_hash = _hash_file(filepath)
+        if not file_hash:
+            return jsonify({'error': 'Could not read file for hashing.'})
+            
+        obj_path  = os.path.join(objects_dir, f'{file_hash}.docx')
+        if not os.path.exists(obj_path):
+            shutil.copy2(filepath, obj_path)
+
+        # Get current tree from HEAD commit
+        branch    = index.get('HEAD', 'main')
+        curr_cid  = index['branches'].get(branch)
+        old_tree  = dict(index['commits'][curr_cid]['tree']) if curr_cid and curr_cid in index['commits'] else {}
+
+        # Check for changes
+        if old_tree.get(filename) == file_hash:
+            return jsonify({'output': 'No changes to commit.'})
+
+        new_tree = dict(old_tree)
+        new_tree[filename] = file_hash
+
+        # Build commit id
+        cid = hashlib.sha256(f'{message}{datetime.datetime.now().isoformat()}'.encode()).hexdigest()[:8]
+        index['commits'][cid] = {
+            'message': message,
+            'timestamp': datetime.datetime.now().isoformat(),
+            'parent': curr_cid,
+            'tree': new_tree,
+        }
+        index['branches'][branch] = cid
+        _save_index(doc_dir, index)
+        return jsonify({'output': message})
+    except Exception as e:
+        return jsonify({'error': f'Commit failed: {e}'})
+
+
+@app.route('/api/branch-create', methods=['POST'])
+def api_branch_create():
+    """Create a new branch inline."""
+    try:
+        data      = request.get_json(force=True)
+        filepath  = normalize_path(data.get('filepath', ''))
+        branch_name = data.get('branch_name', '').strip()
+        if not filepath or not branch_name:
+            return jsonify({'error': 'filepath and branch_name are required.'})
+        doc_dir = os.path.dirname(filepath)
+        index   = load_index(doc_dir)
+        if not index:
+            return jsonify({'error': 'Not a docgit repository.'})
+        if branch_name in index['branches']:
+            return jsonify({'error': f"Branch '{branch_name}' already exists."})
+        head_branch = index.get('HEAD', 'main')
+        curr_cid    = index['branches'].get(head_branch)
+        index['branches'][branch_name] = curr_cid
+        _save_index(doc_dir, index)
+        return jsonify({'output': f"Created branch '{branch_name}'"})
+    except Exception as e:
+        return jsonify({'error': f'Branch creation failed: {e}'})
+
+
 # ── API: branches ─────────────────────────────────────────────────────────────
 @app.route('/api/branches', methods=['POST'])
 def api_branches():
@@ -286,44 +424,80 @@ def api_commits():
 
 
 # ── API: has-changes (for switch guard) ──────────────────────────────────────
-@app.route('/api/has-changes', methods=['POST'])
-def api_has_changes():
-    """Returns {changed: bool, files: [list of modified/untracked files]}"""
+@app.route('/api/status', methods=['POST'])
+def api_status():
+    """Return working-tree status without spawning a subprocess."""
     import hashlib
-    data     = request.get_json(force=True)
-    filepath = normalize_path(data.get('filepath', ''))
-    if not filepath:
-        return jsonify({'error': 'No filepath'})
-    doc_dir = os.path.dirname(filepath)
-    index   = load_index(doc_dir)
-    if not index:
-        return jsonify({'changed': False, 'files': []})
-
-    branch    = index.get('HEAD', 'main')
-    commit_id = index['branches'].get(branch)
-    tree      = index['commits'][commit_id]['tree'] if commit_id and commit_id in index['commits'] else {}
-
-    changed = []
     try:
+        data     = request.get_json(force=True)
+        filepath = normalize_path(data.get('filepath', ''))
+        if not filepath:
+            return jsonify({'error': 'No filepath'})
+        doc_dir = os.path.dirname(filepath)
+        index   = load_index(doc_dir)
+        if not index:
+            return jsonify({'output': 'Not a docgit repository. Run init first.'})
+
+        branch    = index.get('HEAD', 'main')
+        commit_id = index['branches'].get(branch)
+        tree      = index['commits'][commit_id]['tree'] if commit_id and commit_id in index['commits'] else {}
+
         working = [f for f in os.listdir(doc_dir)
-                   if f.endswith('.docx') and not f.startswith('~$') and os.path.isfile(os.path.join(doc_dir, f))]
+                   if f.endswith('.docx') and not f.startswith('~$')
+                   and os.path.isfile(os.path.join(doc_dir, f))]
+        
+        rows = []
         for f in working:
             full = os.path.join(doc_dir, f)
-            hasher = hashlib.sha256()
             with open(full, 'rb') as fh:
-                hasher.update(fh.read())
-            h = hasher.hexdigest()
+                h = hashlib.sha256(fh.read()).hexdigest()
             if f not in tree:
-                changed.append(f + ' (untracked)')
+                rows.append(f'  {f:<50}  Untracked')
             elif tree[f] != h:
-                changed.append(f + ' (modified)')
+                rows.append(f'  {f:<50}  Modified')
+            else:
+                rows.append(f'  {f:<50}  Unmodified')
         for f in tree:
             if f not in working:
-                changed.append(f + ' (deleted)')
-    except Exception as e:
-        return jsonify({'error': str(e)})
+                rows.append(f'  {f:<50}  Deleted')
 
-    return jsonify({'changed': len(changed) > 0, 'files': changed})
+        if not rows:
+            body = 'Nothing to commit, working tree clean.'
+        else:
+            body = 'File                                               Status\n' + '-'*62 + '\n' + '\n'.join(rows)
+        return jsonify({'output': f'On branch {branch}\n{body}'})
+    except Exception as e:
+        return jsonify({'error': f'Status failed: {e}'})
+
+
+@app.route('/api/log', methods=['POST'])
+def api_log():
+    """Return commit log without spawning a subprocess."""
+    try:
+        data     = request.get_json(force=True)
+        filepath = normalize_path(data.get('filepath', ''))
+        if not filepath:
+            return jsonify({'error': 'No filepath'})
+        doc_dir = os.path.dirname(filepath)
+        index   = load_index(doc_dir)
+        if not index:
+            return jsonify({'output': 'Not a docgit repository. Run init first.'})
+
+        branch    = index.get('HEAD', 'main')
+        commit_id = index['branches'].get(branch)
+        lines = [f'Branch: {branch}', '-'*72]
+        count = 0
+        while commit_id and commit_id in index['commits']:
+            c = index['commits'][commit_id]
+            ts = c.get('timestamp', '')[:19].replace('T', ' ')
+            lines.append(f"{commit_id[:7]}  {ts}  {c['message']}")
+            commit_id = c.get('parent')
+            count += 1
+        if count == 0:
+            lines.append('No commits yet.')
+        return jsonify({'output': '\n'.join(lines)})
+    except Exception as e:
+        return jsonify({'error': f'Log failed: {e}'})
 
 
 
@@ -490,11 +664,27 @@ def api_command():
     return jsonify({'output': out, 'code': code})
 
 
+
+
 if __name__ == '__main__':
     cert = os.path.join(BASE_DIR, 'localhost+1.pem')
     key  = os.path.join(BASE_DIR, 'localhost+1-key.pem')
     if not os.path.exists(cert):
         print('ERROR: localhost+1.pem not found. Run: mkcert localhost 127.0.0.1')
         sys.exit(1)
-    print('DocGit server → https://127.0.0.1:5000')
-    app.run(host='127.0.0.1', port=5000, ssl_context=(cert, key), debug=False)
+    print('DocGit server \u2192 https://127.0.0.1:5000')
+    # cheroot: pure-Python, Windows-native, SSL-capable, multi-threaded WSGI server.
+    # Waitress does NOT support SSL directly -- cheroot is the correct replacement.
+    try:
+        from cheroot import wsgi as cheroot_wsgi
+        from cheroot.ssl.builtin import BuiltinSSLAdapter
+        server = cheroot_wsgi.Server(('127.0.0.1', 5000), app, numthreads=8)
+        server.ssl_adapter = BuiltinSSLAdapter(cert, key)
+        print('Running on cheroot (8 threads, SSL)')
+        server.start()
+    except ImportError:
+        # Fallback: Flask built-in server with threading enabled.
+        print('cheroot not found -- falling back to Flask threaded server.')
+        print('For better performance: pip install cheroot')
+        app.run(host='127.0.0.1', port=5000, ssl_context=(cert, key),
+                debug=False, threaded=True)

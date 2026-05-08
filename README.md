@@ -107,6 +107,19 @@ Every button click in the sidebar sends a JSON POST to the server. The server sh
 
 The sidebar will appear on the right side of Word. This step only needs to be done once — Word remembers the add-in.
 
+> **If the "Shared Folder" tab does not appear in the Add-ins dialog:**
+>
+> The network share must be manually trusted in Word's Trust Center:
+>
+> 1. In Word, go to **File → Options → Trust Center → Trust Center Settings**
+> 2. Click **Trusted Add-in Catalogs**
+> 3. In the **Catalog URL** field, enter: `\\localhost\DocGitAddin`
+> 4. Click **Add Catalog**
+> 5. Check the **Show in Menu** checkbox
+> 6. Click **OK** and **restart Word**
+>
+> The **Shared Folder** tab will now appear under **Insert → My Add-ins**.
+
 > **First-time SSL trust:** After install, open `https://127.0.0.1:5000` in Edge and click **Advanced → Proceed**. This clears any remaining browser SSL warning.
 
 ### Option B — Run from Source
